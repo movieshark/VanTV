@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.vantv" name="VanTV" version="0.7.0" provider-name="Solid Robot">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.requests" version="2.12.4"/>
+        <import addon="script.module.inputstreamhelper" version="0.3.3"/>
+        <import addon="script.module.pycryptodome" version="3.4.3"/>
+        <import addon="script.module.bottle" version="0.12.18"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">VanTV</summary>
+        <description lang="en">Unofficial One TV Hungary Kodi Addon</description>
+        <disclaimer lang="en">This addon is not created or maintained by One Magyarország Zrt.</disclaimer>
+        <summary lang="hu">VanTV</summary>
+        <description lang="hu"></description>
+        <disclaimer lang="hu">Ez a kiegészítő nem hivatalos, és nem a One Magyarország Zrt. készítette.</disclaimer>
+        <platform>all</platform>
+        <language>hu en</language>
+        <license>GPLv2</license>
+        <forum>https://prohardver.hu/tema/kodi_xbmc_kiegeszito_magyar_nyelvu_online_filmekhe/hsz_1-50.html</forum>
+        <website></website>
+        <email></email>
+        <source>https://github.com/movieshark/VanTV</source>
+        <assets>
+            <!--<icon>resources/media/logo.jpg</icon>-->
+            <fanart></fanart>
+        </assets>
+        <news></news>
+    </extension>
+</addon>

@@ -1,0 +1,152 @@
+# Kodi Media Center language file
+# Addon Name: VanTV
+# Addon id: plugin.video.vantv
+# Addon Provider: Solid Robot
+msgid ""
+msgstr ""
+"Project-Id-Version: plugin.video.vantv\n"
+"Report-Msgid-Bugs-To: https://github.com/movieshark/VanTV\n"
+"POT-Creation-Date: 2025-01-20 16:15+0000\n"
+"PO-Revision-Date: 2025-01-20 16:40+0000\n"
+"Last-Translator: Solid Robot\n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "#30001"
+msgid "General"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Account"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Username"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Please log in first in settings!"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Request details"
+msgstr ""
+
+msgctxt "#30008"
+msgid "User agent"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Read-only data"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Display tokens?"
+msgstr ""
+
+msgctxt "#30011"
+msgid "Device's unique ID"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Access Token"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Access Token Expiry"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Refresh Token"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Refresh Token Expiry"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Upon logging in, we encountered a {status} ((message: {message}) error. Wrong credentials?"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Channel list"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Upon logging in, we encountered the following error: \"{error}\"."
+msgstr ""
+
+msgctxt "#30019"
+msgid "Request error: {status} ({body})"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Couldn't fetch content token. This token is required for successful playback. Can't continue without it."
+msgstr ""
+
+msgctxt "#30021"
+msgid "Inputstream Adaptive and Widevine are required for playback. Please install them."
+msgstr ""
+
+msgctxt "#30022"
+msgid "License Proxy Settings"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Bind address"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Minimum port"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Maximum port"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Too many devices are currently watching content. Try again after you have stopped watching content on other devices."
+msgstr ""
+
+msgctxt "#30027"
+msgid "Playback"
+msgstr ""
+
+msgctxt "#30028"
+msgid "HTTP manifest (only recommended if HTTPS fails)"
+msgstr ""
+
+msgctxt "#30029"
+msgid "This add-on was made possible by the generous people who offered their accounts (tomp and vargalex - thanks!) and days of research work. Therefore, please [B]read the following carefully[/B]! While the addon is in alpha stage, this message will show up during each launch. Feel free to ask questions on the forum.\n"
+"\n"
+"[COLOR=gray]1.[/COLOR] By logging into the add-on, you automatically accept the Terms and Conditions of the underlying platform and agree to abide by them. This add-on was created independently of the mentioned platform for educational purposes. I do not recommend its use to anyone, nor do I guarantee compatibility and I am not taking any responsibility for any potential damage!\n"
+"[COLOR=gray]2.[/COLOR] The add-on works on most Widevine compatible devices as of now (currently Linux, Windows and Android was tested). Playready is not supported. The latest Widevine CDM is recommended, plus inputstream.adaptive must be installed to get the addon to function properly at the time of release. The add-on will make every effort to verify and install these components if necessary. However, resolving any resulting errors (such as playback not starting) is the user's responsibility.\n"
+"[COLOR=gray]3.[/COLOR] [B]The add-on is in its early alpha stage. Currently the login flow and the live channel listing & playback is implemented.[/B] It's only purpose was studying the platform. By using this you may get banned temporarily or permanently. Again, I am not responsible. Most platform errors are unexplored. You may see raw error messages instead of user friendly messages. Feel free to ask about them.\n"
+"[COLOR=gray]4.[/COLOR] The advanced settings of the add-on do not need to be modified by default, and it is not recommended to do so. Please only make changes if you are absolutely sure about it, or if it was recommended by the developer.\n"
+"[COLOR=gray]5.[/COLOR] The add-on supports English language as of now. Once enough things are stable, I will add Hungarian as well. I welcome translations into other languages (if you see the need).\n"
+"[COLOR=gray]6.[/COLOR] The add-on is not prepared for the scenario where you are logged out of the platform or another registered device on the platform logs you out due to reasons beyond your control. In such cases, it may encounter errors. Please make sure that your subscription is active, the official applications are working, and you have not exceeded the allowed device limit before reporting an error. It is recommended to delete cached login data, and if that doesn't solve the issue, reinstall the add-on, which attempts to log in again and re-register the device.\n"
+"[COLOR=gray]7.[/COLOR] This is a legal addon! You will need a valid subscription to the platform.\n"
+"[COLOR=gray]8.[/COLOR] [B]This is all EXTREMELY experimental.[/B] Expect things to break. Most functionality isn't implemented yet.\n"
+"\n"
+"Thank you for reading, and enjoy!"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Device model"
+msgstr ""
+
+msgctxt "#30031"
+msgid "About"
+msgstr ""
