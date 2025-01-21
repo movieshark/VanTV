@@ -20,7 +20,7 @@ web_devices = {
         "hardware_manufacturer": "Windows",
         "hardware_type": "Browser",
         "os_type": "Windows",
-        "os_version": "x86_64",
+        "os_version": "10",
         "nagra_device_type": "Browser",
         "nagra_target": "tv",
         "screen_width": 1920,
