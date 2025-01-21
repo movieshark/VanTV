@@ -150,3 +150,59 @@ msgstr ""
 msgctxt "#30031"
 msgid "About"
 msgstr ""
+
+msgctxt "#30032"
+msgid "Logging into MyVodka..."
+msgstr ""
+
+msgctxt "#30033"
+msgid "The following error occurred: {message}"
+msgstr ""
+
+msgctxt "#30034"
+msgid "Logging into MyVodka public API..."
+msgstr ""
+
+msgctxt "#30035"
+msgid "Fetching the active subscriptions..."
+msgstr ""
+
+msgctxt "#30036"
+msgid "No TV subscription found!"
+msgstr ""
+
+msgctxt "#30037"
+msgid "We have found multiple TV subscriptions. Please select one."
+msgstr ""
+
+msgctxt "#30038"
+msgid "Type"
+msgstr ""
+
+msgctxt "#30039"
+msgid "Delete device"
+msgstr ""
+
+msgctxt "#30040"
+msgid "Rename device"
+msgstr ""
+
+msgctxt "#30041"
+msgid "Device list (MyVodka)"
+msgstr ""
+
+msgctxt "#30042"
+msgid "Refresh"
+msgstr ""
+
+msgctxt "#30043"
+msgid "Enter a new name for this device"
+msgstr ""
+
+msgctxt "#30044"
+msgid "Device renamed successfully!"
+msgstr ""
+
+msgctxt "#30045"
+msgid "Device deleted!"
+msgstr ""

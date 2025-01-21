@@ -1,4 +1,5 @@
 import urllib.parse
+from json import dumps, loads
 from os import environ
 from random import choice
 from sys import argv
@@ -12,6 +13,9 @@ import xbmcaddon
 import xbmcgui
 import xbmcplugin
 from requests import HTTPError, Session
+from resources.lib.myvodka import login as myvodka_login
+from resources.lib.myvodka import static as myvodka_static
+from resources.lib.myvodka import vtv
 from resources.lib.utils import static as utils_static
 from resources.lib.van import enums, login, media_list, playback, static
 
@@ -111,7 +115,7 @@ def add_item(plugin_prefix, handle, name, action, is_directory, **kwargs) -> Non
 
     ctx_menu = []
     if kwargs.get("refresh"):
-        ctx_menu.append((addon.getLocalizedString(30036), "Container.Refresh"))
+        ctx_menu.append((addon.getLocalizedString(30042), "Container.Refresh"))
     if kwargs.get("ctx_menu"):
         ctx_menu.extend(kwargs["ctx_menu"])
     item.addContextMenuItems(ctx_menu)
@@ -320,6 +324,14 @@ def main_menu() -> None:
         handle=argv[1],
         name=addon.getLocalizedString(30017),
         action="channel_list",
+        is_directory=True,
+    )
+    # device list (MyVodka)
+    add_item(
+        plugin_prefix=argv[0],
+        handle=argv[1],
+        name=addon.getLocalizedString(30041),
+        action="myvodka_device_list",
         is_directory=True,
     )
     # about
@@ -565,6 +577,258 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
             pass
 
 
+def prepare_myvodka_session() -> Session:
+    """
+    Prepares a requests session for MyVodka.
+
+    :return: requests session
+    """
+    session = Session()
+    session.headers.update(
+        {
+            "Accept-Encoding": "gzip",
+            "User-Agent": "okhttp/4.11.0",
+            "Connection": "Keep-Alive",
+        }
+    )
+    return session
+
+
+def vodka_authenticate() -> None:
+    """
+    Handles login to MyVodka.
+
+    :return: None
+    """
+    session = prepare_myvodka_session()
+
+    # check if we have a token and if it's still valid
+    expiry = xbmcgui.Window(static.HOME_ID).getProperty("kodi.van.myvodka_expiry")
+    if not expiry or int(expiry) < int(time()):
+        # show progress dialog
+        dialog = xbmcgui.DialogProgress()
+        dialog.create(addon.getAddonInfo("name"), addon.getLocalizedString(30032))
+        try:
+            response = myvodka_login.oxauth_login(
+                session,
+                myvodka_static.get_oxauth_url(),
+                myvodka_static.get_oxauth_clientid(),
+                myvodka_static.get_oxauth_clientsecret(),
+                addon.getSetting("username"),
+                addon.getSetting("password"),
+                myvodka_static.get_oxauth_authorization(),
+            )
+        except myvodka_login.LoginException as e:
+            dialog = xbmcgui.Dialog()
+            dialog.ok(
+                addon.getAddonInfo("name"),
+                addon.getLocalizedString(30033).format(message=e),
+            )
+            exit()
+        access_token = response["access_token"]
+        dialog.update(50, addon.getLocalizedString(30034))
+        response = myvodka_login.publicapi_login(
+            session,
+            f"{myvodka_static.get_publicapi_host()}/oauth2/token",
+            myvodka_static.get_publicapi_clientid(),
+            access_token,
+        )
+        access_token = response["access_token"]
+        expiry = int(response["issued_at"] / 1000) + response["expires_in"]
+        subscription_id = response.get("id_profile_svc_response", {}).get(
+            "selectedSubscription", {}
+        )["id"]
+        dialog.update(75, addon.getLocalizedString(30035))
+        response = myvodka_login.list_subscriptions(
+            session,
+            f"{myvodka_static.get_publicapi_host()}/mva-api/customerAPI/v1/accountAndSubscription",
+            f"Bearer {access_token}",
+            subscription_id,  # default subscription goes here
+        )
+        services = response.get("myServices", [])
+        subscriptions = []
+        for service in services:
+            subscriptions = service.get("subscriptions", [])
+            # filter to type: TV
+            subscriptions = [
+                subscription
+                for subscription in subscriptions
+                if subscription["type"] == "TV"
+            ]
+            if subscriptions:
+                break
+        if not subscriptions:
+            dialog.close()
+            dialog = xbmcgui.Dialog()
+            dialog.ok(addon.getAddonInfo("name"), addon.getLocalizedString(30036))
+            exit()
+        dialog.close()
+        if len(subscriptions) < 1:
+            # show picker dialog
+            dialog = xbmcgui.Dialog()
+            subscription_names = [
+                f"{subscription['name']} ({subscription['longAddress']})"
+                for subscription in subscriptions
+            ]
+            index = dialog.select(
+                addon.getLocalizedString(30037),
+                subscription_names,
+            )
+            if index == -1:
+                exit()
+        else:
+            index = 0
+        subscription = subscriptions[index]
+        subscription_id = subscription["id"]
+        xbmcgui.Window(static.HOME_ID).setProperty(
+            "kodi.van.myvodka_expiry", str(expiry)
+        )
+        xbmcgui.Window(static.HOME_ID).setProperty(
+            "kodi.van.myvodka_access_token", access_token
+        )
+        xbmcgui.Window(static.HOME_ID).setProperty(
+            "kodi.van.myvodka_individual_id", subscription_id
+        )
+    session.close()
+
+
+def vodka_device_list() -> None:
+    """
+    Handles login to MyVodka if necessary and renders the device list.
+
+    :param session: requests session
+    :return: None
+    """
+    vodka_authenticate()
+    session = prepare_myvodka_session()
+
+    access_token = xbmcgui.Window(static.HOME_ID).getProperty(
+        "kodi.van.myvodka_access_token"
+    )
+    individual_id = xbmcgui.Window(static.HOME_ID).getProperty(
+        "kodi.van.myvodka_individual_id"
+    )
+    # request device list
+    device_list = vtv.get_devices(
+        session,
+        f"{myvodka_static.get_publicapi_host()}/mva-api/productAPI/v2/vtv",
+        f"Bearer {access_token}",
+        individual_id,
+    )
+
+    connected_devices = device_list.get("connectedDevices", [])
+
+    for device in connected_devices:
+        device_id = device.get("id")
+        device_name = device.get("name")
+        device_type = device.get("type")
+        description = f"{addon.getLocalizedString(30011)}: {device_id}\n{addon.getLocalizedString(30038)}: {device_type}"
+        add_item(
+            plugin_prefix=argv[0],
+            handle=argv[1],
+            name=device_name if device_name else device_id,
+            description=description,
+            action="dummy",  # clicking should do nothing
+            is_directory=True,
+            ctx_menu=[
+                (
+                    addon.getLocalizedString(30039),
+                    f"RunPlugin({argv[0]}?action=del_vodka_device&device={urllib.parse.quote(dumps(device))})",
+                ),
+                (
+                    addon.getLocalizedString(30040),
+                    f"RunPlugin({argv[0]}?action=rename_vodka_device&device={urllib.parse.quote(dumps(device))})",
+                ),
+            ],
+            refresh=True,
+        )
+    session.close()
+    xbmcplugin.endOfDirectory(int(argv[1]))
+    xbmcplugin.setContent(int(argv[1]), "files")
+
+
+def rename_vodka_device(device: str) -> None:
+    """
+    Rename a MyVodka device.
+
+    :param device_id: device id (udid)
+    :return: None
+    """
+    # prompt for new name
+    dialog = xbmcgui.Dialog()
+    device_data = loads(device)
+    device_name = device_data.get("name", "")
+    new_name = dialog.input(
+        addon.getLocalizedString(30043),
+        device_name,
+        type=xbmcgui.INPUT_TYPE_TEXT,
+    )
+    if not new_name:
+        return
+    # rename device
+    vodka_authenticate()
+    session = prepare_myvodka_session()
+    access_token = xbmcgui.Window(static.HOME_ID).getProperty(
+        "kodi.van.myvodka_access_token"
+    )
+    individual_id = xbmcgui.Window(static.HOME_ID).getProperty(
+        "kodi.van.myvodka_individual_id"
+    )
+    device_id = device_data["id"]
+    device_data["name"] = new_name
+    try:
+        if vtv.edit_device(
+            session,
+            f"{myvodka_static.get_publicapi_host()}/mva-api/productAPI/v2/vtv/device/{device_id}",
+            f"Bearer {access_token}",
+            individual_id,
+            device_data,
+        ):
+            dialog.ok(addon.getAddonInfo("name"), addon.getLocalizedString(30044))
+    except Exception as e:
+        dialog.ok(
+            addon.getAddonInfo("name"),
+            addon.getLocalizedString(30033).format(message=e),
+        )
+    session.close()
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def delete_vodka_device(device: str) -> None:
+    """
+    Delete a MyVodka device.
+
+    :param device_id: device id (udid)
+    :return: None
+    """
+    vodka_authenticate()
+    session = prepare_myvodka_session()
+    access_token = xbmcgui.Window(static.HOME_ID).getProperty(
+        "kodi.van.myvodka_access_token"
+    )
+    individual_id = xbmcgui.Window(static.HOME_ID).getProperty(
+        "kodi.van.myvodka_individual_id"
+    )
+    device_data = loads(device)
+    device_id = device_data["id"]
+    dialog = xbmcgui.Dialog()
+    try:
+        if vtv.delete_device(
+            session,
+            f"{myvodka_static.get_publicapi_host()}/mva-api/productAPI/v2/vtv/device/{device_id}",
+            f"Bearer {access_token}",
+            individual_id,
+        ):
+            dialog.ok(addon.getAddonInfo("name"), addon.getLocalizedString(30045))
+    except Exception as e:
+        dialog.ok(
+            addon.getAddonInfo("name"),
+            addon.getLocalizedString(30033).format(message=e),
+        )
+    session.close()
+    xbmc.executebuiltin("Container.Refresh")
+
+
 def about_dialog() -> None:
     """
     Show the about dialog.
@@ -602,5 +866,13 @@ if __name__ == "__main__":
         channel_list(session)
     elif action == "play_channel":
         play(session, params.get("id"), urllib.parse.unquote_plus(params.get("extra")))
+    elif action == "myvodka_device_list":
+        vodka_device_list()
+    elif action == "rename_vodka_device":
+        rename_vodka_device(params.get("device"))
+    elif action == "del_vodka_device":
+        delete_vodka_device(params.get("device"))
     elif action == "about":
         about_dialog()
+
+    session.close()
