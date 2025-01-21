@@ -498,13 +498,11 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
     if get_kodi_version() < 21:
         play_item.setProperty("inputstream.adaptive.manifest_type", "mpd")
     play_item.setProperty("inputstream.adaptive.license_type", "com.widevine.alpha")
-    if not is_android():
-        user_agent = addon.getSetting("useragent")
-    else:
-        user_agent = static.android_nagra_user_agent
-    common_headers = urllib.parse.urlencode({"User-Agent": user_agent})
+    common_headers = urllib.parse.urlencode(
+        {"User-Agent": addon.getSetting("useragent")}
+    )
     stream_headers = urllib.parse.urlencode(
-        {"User-Agent": user_agent, "verifypeer": "false"}
+        {"User-Agent": addon.getSetting("useragent"), "verifypeer": "false"}
     )
     if get_kodi_version() > 21:
         play_item.setProperty(
@@ -537,10 +535,14 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
             addon.getLocalizedString(30021),
         )
         exit()
+    if not is_android():
+        user_agent = addon.getSetting("useragent")
+    else:
+        user_agent = static.android_nagra_user_agent
     license_headers = urllib.parse.urlencode(
         {
             "nv-authorizations": f"{content_token},{session_token}",
-            "User-Agent": addon.getSetting("useragent"),
+            "User-Agent": user_agent,
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
