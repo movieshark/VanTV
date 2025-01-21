@@ -535,10 +535,12 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
             addon.getLocalizedString(30021),
         )
         exit()
+
     if not is_android():
         user_agent = addon.getSetting("useragent")
     else:
         user_agent = static.android_nagra_user_agent
+
     license_headers = urllib.parse.urlencode(
         {
             "nv-authorizations": f"{content_token},{session_token}",
@@ -547,6 +549,7 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
             "Accept": "application/json",
         }
     )
+
     license_url = f'http://127.0.0.1:{licproxy_thread.port}/wv/license|{license_headers}|{{"challenge":"b{{SSM}}"}}|JBlicense'
     play_item.setProperty("inputstream.adaptive.license_key", license_url)
 
@@ -563,12 +566,7 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
         # when a user switches to another stream without stopping the previous one
         # Kodi will only trigger onPlayBackResumed, so we need to check if the url is the same
         # if they are different, stop the licproxy thread
-        if (
-            player.isPlaying()
-            and channel_url != player.getPlayingFile()
-            and licproxy_thread
-            and licproxy_thread.is_alive()
-        ):
+        if player.isPlaying() and channel_url != player.getPlayingFile():
             break
 
     if licproxy_thread and licproxy_thread.is_alive():
