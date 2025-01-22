@@ -1,5 +1,4 @@
 from requests import Session
-from resources.lib.van import static
 
 
 def get_channel_list(session: Session, api_base: str, access_token: str) -> dict:

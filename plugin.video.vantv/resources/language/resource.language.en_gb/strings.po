@@ -206,3 +206,44 @@ msgstr ""
 msgctxt "#30045"
 msgid "Device deleted!"
 msgstr ""
+
+msgctxt "#30046"
+msgid "Device created"
+msgstr ""
+
+msgctxt "#30047"
+msgid "Device modified"
+msgstr ""
+
+msgctxt "#30048"
+msgid "Device activated"
+msgstr ""
+
+msgctxt "#30049"
+msgid "Device status"
+msgstr ""
+
+msgctxt "#30050"
+msgid "Device"
+msgstr ""
+
+msgctxt "#30051"
+msgid "OS"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Screen resolution"
+msgstr ""
+
+msgctxt "#30053"
+msgid "Device list"
+msgstr ""
+
+msgctxt "#30054"
+msgid "Are you absolutely sure you want to delete this device?"
+"[CR][B]This action cannot be undone![/B]"
+msgstr ""
+
+msgctxt "#30055"
+msgid "Device action failed!"
+msgstr ""

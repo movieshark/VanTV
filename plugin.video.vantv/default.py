@@ -17,7 +17,8 @@ from resources.lib.myvodka import login as myvodka_login
 from resources.lib.myvodka import static as myvodka_static
 from resources.lib.myvodka import vtv
 from resources.lib.utils import static as utils_static
-from resources.lib.van import enums, login, media_list, playback, static
+from resources.lib.utils import zulu_to_human_localtime
+from resources.lib.van import devices, enums, login, media_list, playback, static
 
 addon = xbmcaddon.Addon()
 
@@ -326,6 +327,14 @@ def main_menu() -> None:
         action="channel_list",
         is_directory=True,
     )
+    # device list (OpenTV)
+    add_item(
+        plugin_prefix=argv[0],
+        handle=argv[1],
+        name=addon.getLocalizedString(30053),
+        action="device_list",
+        is_directory=True,
+    )
     # device list (MyVodka)
     add_item(
         plugin_prefix=argv[0],
@@ -575,6 +584,237 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
             licproxy_thread.join()
         except RuntimeError:
             pass
+
+
+def device_list(session: Session) -> None:
+    """
+    Renders the list of devices for the current user.
+
+    NOTE: None of this is supported by the official apps.
+
+    :param session: The requests session.
+    :return: None
+    """
+    try:
+        device_list = devices.get_devices(
+            session, static.get_api_base(), addon.getSetting("accesstoken")
+        ).get("resourceSet", [])
+    except HTTPError as e:
+        xbmc.log(format_exc(), xbmc.LOGERROR)
+        dialog = xbmcgui.Dialog()
+        dialog.ok(
+            addon.getAddonInfo("name"),
+            addon.getLocalizedString(30019).format(
+                status=e.response.status_code, body=e.response.text
+            ),
+        )
+        exit()
+
+    # sort devices by activation status and creation date (if available)
+    device_list.sort(
+        key=lambda x: (x.get("activationStatus"), x.get("created")), reverse=True
+    )
+
+    for device in device_list:
+        device_id = device.get("_id")
+        device_public_id = device.get("publicId")
+
+        if not all([device_id, device_public_id]):
+            continue
+
+        device_type = device.get("deviceType")
+        device_name = device.get("name")
+        device_created = device.get("created")
+        device_modified = device.get("modified")
+        device_activated = device.get("activated")
+        device_activation_status = device.get("activationStatus")
+        device_information = (device.get("deviceInformation") or {}).get("device") or {}
+
+        # device properties
+        device_hardware = device_information.get("hardware") or {}
+        device_os = device_information.get("OS") or {}
+        device_screen = device_information.get("screen") or {}
+
+        device_model = device_hardware.get("model")
+        device_manufacturer = device_hardware.get("manufacturer")
+        device_type = device_hardware.get("type")
+
+        device_os_type = device_os.get("type")
+        device_os_version = device_os.get("version")
+
+        device_screen_height = device_screen.get("height")
+        device_screen_width = device_screen.get("width")
+
+        description = f"{addon.getLocalizedString(30011)}: {device_id}\n"
+        if device_created:
+            description += f"{addon.getLocalizedString(30046)}: {zulu_to_human_localtime(device_created)}\n"
+        if device_modified:
+            description += f"{addon.getLocalizedString(30047)}: {zulu_to_human_localtime(device_modified)}\n"
+        if device_activated:
+            description += f"{addon.getLocalizedString(30048)}: {zulu_to_human_localtime(device_activated)}\n"
+
+        if device_activation_status:
+            description += (
+                f"{addon.getLocalizedString(30049)}: {device_activation_status}\n"
+            )
+
+        device_details = ""
+        if device_manufacturer:
+            device_details += f"{device_manufacturer}"
+        if device_model:
+            device_details += f" {device_model}"
+        if device_type:
+            device_details += f" ({device_type})"
+
+        if device_details:
+            description += (
+                f"{addon.getLocalizedString(30050)}: {device_details.strip()}\n"
+            )
+
+        device_os_details = ""
+        if device_os_type:
+            device_os_details += f"{device_os_type}"
+        if device_os_version:
+            device_os_details += f" {device_os_version}"
+
+        if device_os_details:
+            description += (
+                f"{addon.getLocalizedString(30051)}: {device_os_details.strip()}\n"
+            )
+
+        if device_screen_height and device_screen_width:
+            description += f"{addon.getLocalizedString(30052)}: {device_screen_width}x{device_screen_height}\n"
+
+        ctx_menu = []
+        # we don't want the user to remove STBs accidentally
+        if not (device_type == "MANAGED" or device_type == "STB"):
+            # NOTE: deactivate doesn't actually remove the device, it just deactivates it
+            # which causes unexpected issues with the provider
+            # use MyVodka to remove the device instead
+            # this is only here for educational purposes
+
+            # ctx_menu.append(
+            #    (
+            #        addon.getLocalizedString(30039),
+            #        f"RunPlugin({argv[0]}?action=del_device&device_id={device_public_id})",
+            #    )
+            # )
+            ctx_menu.append(
+                (
+                    addon.getLocalizedString(30040),
+                    f"RunPlugin({argv[0]}?action=rename_device&device_id={device_public_id})",
+                )
+            )
+
+        add_item(
+            plugin_prefix=argv[0],
+            handle=argv[1],
+            name=device_name or device_id,
+            description=description,
+            action="dummy",
+            is_directory=True,
+            ctx_menu=ctx_menu,
+            refresh=True,
+        )
+
+    xbmcplugin.endOfDirectory(int(argv[1]))
+    xbmcplugin.setContent(int(argv[1]), "files")
+
+
+def deactivate_device(session: Session, device_id: str) -> None:
+    """
+    Deactivates a device.
+
+    NOTE: None of this is supported by the official apps.
+    NOTE: Deactivating doesn't mean complete removal. For now it's
+    not exposed, because it can cause unexpected issues. Use the myvodka
+    device list to remove devices!
+
+    :param session: The requests session.
+    :param device_id: The ID of the device.
+
+    :return: None
+    """
+    dialog = xbmcgui.Dialog()
+    if dialog.yesno(addon.getAddonInfo("name"), addon.getLocalizedString(30054)):
+        try:
+            data = devices.deactivate_device(
+                session,
+                static.get_api_base(),
+                addon.getSetting("accesstoken"),
+                device_id,
+            )
+        except devices.DeviceError as e:
+            dialog.ok(addon.getAddonInfo("name"), str(e))
+            return
+        except HTTPError as e:
+            xbmc.log(format_exc(), xbmc.LOGERROR)
+            dialog.ok(
+                addon.getAddonInfo("name"),
+                addon.getLocalizedString(30019).format(
+                    status=e.response.status_code, body=e.response.text
+                ),
+            )
+            exit()
+        if data["modifiedCount"] > 0:
+            dialog.notification(
+                addon.getAddonInfo("name"),
+                addon.getLocalizedString(30045),
+                xbmcgui.NOTIFICATION_INFO,
+                5000,
+            )
+        else:
+            dialog.ok(
+                addon.getAddonInfo("name"),
+                addon.getLocalizedString(30055),
+            )
+        xbmc.executebuiltin("Container.Refresh")
+
+
+def rename_device(session: Session, device_id: str) -> None:
+    """
+    Renames a device.
+
+    NOTE: None of this is supported by the official apps.
+
+    :param session: The requests session.
+    :param device_id: The ID of the device.
+
+    :return: None"""
+    dialog = xbmcgui.Dialog()
+    new_name = dialog.input(addon.getLocalizedString(30043))
+    if not new_name:
+        return
+    try:
+        data = devices.rename_device(
+            session,
+            static.get_api_base(),
+            addon.getSetting("accesstoken"),
+            device_id,
+            new_name,
+        )
+    except HTTPError as e:
+        xbmc.log(format_exc(), xbmc.LOGERROR)
+        dialog.ok(
+            addon.getAddonInfo("name"),
+            addon.getLocalizedString(30019).format(
+                status=e.response.status_code, body=e.response.text
+            ),
+        )
+        exit()
+    if data["modifiedCount"] > 0:
+        dialog.notification(
+            addon.getAddonInfo("name"),
+            addon.getLocalizedString(30044),
+            xbmcgui.NOTIFICATION_INFO,
+            5000,
+        )
+    else:
+        dialog.ok(
+            addon.getAddonInfo("name"),
+            addon.getLocalizedString(30055),
+        )
+    xbmc.executebuiltin("Container.Refresh")
 
 
 def prepare_myvodka_session() -> Session:
@@ -866,6 +1106,12 @@ if __name__ == "__main__":
         channel_list(session)
     elif action == "play_channel":
         play(session, params.get("id"), urllib.parse.unquote_plus(params.get("extra")))
+    elif action == "device_list":
+        device_list(session)
+    # elif action == "del_device":
+    #    deactivate_device(session, params.get("device_id"))
+    elif action == "rename_device":
+        rename_device(session, params.get("device_id"))
     elif action == "myvodka_device_list":
         vodka_device_list()
     elif action == "rename_vodka_device":
