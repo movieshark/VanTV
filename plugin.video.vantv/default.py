@@ -723,7 +723,7 @@ def device_list(session: Session) -> None:
         add_item(
             plugin_prefix=argv[0],
             handle=argv[1],
-            name=device_name or device_id,
+            name=device_name or device_details or device_id,
             description=description,
             action="dummy",
             is_directory=True,
