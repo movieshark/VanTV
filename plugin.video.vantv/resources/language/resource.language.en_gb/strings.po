@@ -129,7 +129,7 @@ msgid "HTTP manifest (only recommended if HTTPS fails)"
 msgstr ""
 
 msgctxt "#30029"
-msgid "This add-on was made possible by the generous people who offered their accounts (tomp and vargalex - thanks!) and days of research work. Therefore, please [B]read the following carefully[/B]! While the addon is in alpha stage, this message will show up during each launch. Feel free to ask questions on the forum.\n"
+msgid "This add-on was made possible by the generous people who offered their accounts (tomp and vargalex - thanks!), offered art (blakey - thanks!) and days of research work. Therefore, please [B]read the following carefully[/B]! While the addon is in alpha stage, this message will show up during each launch. Feel free to ask questions on the forum.\n"
 "\n"
 "[COLOR=gray]1.[/COLOR] By logging into the add-on, you automatically accept the Terms and Conditions of the underlying platform and agree to abide by them. This add-on was created independently of the mentioned platform for educational purposes. I do not recommend its use to anyone, nor do I guarantee compatibility and I am not taking any responsibility for any potential damage!\n"
 "[COLOR=gray]2.[/COLOR] The add-on works on most Widevine compatible devices as of now (currently Linux, Windows and Android was tested). Playready is not supported. The latest Widevine CDM is recommended, plus inputstream.adaptive must be installed to get the addon to function properly at the time of release. The add-on will make every effort to verify and install these components if necessary. However, resolving any resulting errors (such as playback not starting) is the user's responsibility.\n"

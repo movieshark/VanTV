@@ -25,8 +25,8 @@
         <email></email>
         <source>https://github.com/movieshark/VanTV</source>
         <assets>
-            <!--<icon>resources/media/logo.jpg</icon>-->
-            <fanart></fanart>
+            <icon>resources/media/icon.png</icon>
+            <!--<fanart></fanart>-->
         </assets>
         <news></news>
     </extension>

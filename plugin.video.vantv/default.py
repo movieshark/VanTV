@@ -19,6 +19,7 @@ from resources.lib.myvodka import vtv
 from resources.lib.utils import static as utils_static
 from resources.lib.utils import zulu_to_human_localtime
 from resources.lib.van import devices, enums, login, media_list, playback, static
+from xbmcvfs import translatePath
 
 addon = xbmcaddon.Addon()
 
@@ -326,6 +327,7 @@ def main_menu() -> None:
         name=addon.getLocalizedString(30017),
         action="channel_list",
         is_directory=True,
+        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/live.png"),
     )
     # device list (OpenTV)
     add_item(
@@ -334,6 +336,7 @@ def main_menu() -> None:
         name=addon.getLocalizedString(30053),
         action="device_list",
         is_directory=True,
+        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/mobile.png"),
     )
     # device list (MyVodka)
     add_item(
@@ -342,6 +345,7 @@ def main_menu() -> None:
         name=addon.getLocalizedString(30041),
         action="myvodka_device_list",
         is_directory=True,
+        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/mobile.png"),
     )
     # about
     add_item(
@@ -350,6 +354,7 @@ def main_menu() -> None:
         name=addon.getLocalizedString(30031),
         action="about",
         is_directory=True,
+        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/about.png"),
     )
     xbmcplugin.endOfDirectory(int(argv[1]))
 
@@ -663,8 +668,17 @@ def device_list(session: Session) -> None:
             device_details += f"{device_manufacturer}"
         if device_model:
             device_details += f" {device_model}"
+        icon = None
         if device_type:
             device_details += f" ({device_type})"
+            if device_type == "Mobile":
+                icon = translatePath(
+                    f"{addon.getAddonInfo('path')}/resources/media/mobile.png"
+                )
+            elif device_type == "Browser":
+                icon = translatePath(
+                    f"{addon.getAddonInfo('path')}/resources/media/web.png"
+                )
 
         if device_details:
             description += (
@@ -715,6 +729,7 @@ def device_list(session: Session) -> None:
             is_directory=True,
             ctx_menu=ctx_menu,
             refresh=True,
+            icon=icon,
         )
 
     xbmcplugin.endOfDirectory(int(argv[1]))
@@ -962,6 +977,17 @@ def vodka_device_list() -> None:
         device_id = device.get("id")
         device_name = device.get("name")
         device_type = device.get("type")
+
+        icon = None
+        if device_type == "Mobile":
+            icon = translatePath(
+                f"{addon.getAddonInfo('path')}/resources/media/mobile.png"
+            )
+        elif device_type == "Browser":
+            icon = translatePath(
+                f"{addon.getAddonInfo('path')}/resources/media/web.png"
+            )
+
         description = f"{addon.getLocalizedString(30011)}: {device_id}\n{addon.getLocalizedString(30038)}: {device_type}"
         add_item(
             plugin_prefix=argv[0],
@@ -970,6 +996,7 @@ def vodka_device_list() -> None:
             description=description,
             action="dummy",  # clicking should do nothing
             is_directory=True,
+            icon=icon,
             ctx_menu=[
                 (
                     addon.getLocalizedString(30039),
