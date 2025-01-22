@@ -24,7 +24,6 @@ def get_channel_list(session: Session, api_base: str, access_token: str) -> dict
         "Authorization": f"Bearer {access_token}",
         "Nagra-Device-Type": session.device_properties["nagra_device_type"],
         "Nagra-Target": session.device_properties["nagra_target"],
-        "nv-tenant-id": static.nv_tenant_id,
     }
     response = session.get(
         f"{api_base}/metadata/delivery/GLOBAL/btv/services",

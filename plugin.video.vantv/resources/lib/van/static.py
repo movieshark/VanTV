@@ -8,8 +8,7 @@ from Cryptodome.Util.Padding import unpad
 _key = bytes.fromhex("6f6e65747670617373776f7264020202")
 _iv = bytes.fromhex("e81b70e7ea32d0d781e3294740a2f288")
 
-nv_tenant_id = "nagra"
-nv_tenant_id_2 = "FIGP0HS7"
+nv_tenant_id = "FIGP0HS7"
 sso_service_id = "4iGSSO"
 content_device_type = "device"
 android_nagra_user_agent = "Android-SDK-5.34.0"

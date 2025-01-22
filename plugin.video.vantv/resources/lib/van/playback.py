@@ -20,7 +20,7 @@ def get_content_token(
     params = {
         "content_id": content_id,
         "type": static.content_device_type,
-        "nv-tenant-id": static.nv_tenant_id_2,
+        "nv-tenant-id": static.nv_tenant_id,
     }
     response = session.post(
         f"{api_base}/ias/v2/content_token", headers=headers, params=params
