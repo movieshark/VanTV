@@ -679,6 +679,10 @@ def device_list(session: Session) -> None:
                 icon = translatePath(
                     f"{addon.getAddonInfo('path')}/resources/media/web.png"
                 )
+            elif device_type == "Tablet":
+                icon = translatePath(
+                    f"{addon.getAddonInfo('path')}/resources/media/tablet.png"
+                )
 
         if device_details:
             description += (
@@ -986,6 +990,10 @@ def vodka_device_list() -> None:
         elif device_type == "Browser":
             icon = translatePath(
                 f"{addon.getAddonInfo('path')}/resources/media/web.png"
+            )
+        elif device_type == "Tablet":
+            icon = translatePath(
+                f"{addon.getAddonInfo('path')}/resources/media/tablet.png"
             )
 
         description = f"{addon.getLocalizedString(30011)}: {device_id}\n{addon.getLocalizedString(30038)}: {device_type}"
