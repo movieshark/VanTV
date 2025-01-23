@@ -773,7 +773,7 @@ def device_list(session: Session) -> None:
             handle=argv[1],
             name=device_name or device_details or device_id,
             description=description,
-            action="dummy",
+            action="show_cm",
             is_directory=True,
             ctx_menu=ctx_menu,
             refresh=True,
@@ -1046,7 +1046,7 @@ def vodka_device_list() -> None:
             handle=argv[1],
             name=device_name if device_name else device_id,
             description=description,
-            action="dummy",  # clicking should do nothing
+            action="show_cm",
             is_directory=True,
             icon=icon,
             ctx_menu=[
@@ -1199,5 +1199,8 @@ if __name__ == "__main__":
         delete_vodka_device(params.get("device"))
     elif action == "about":
         about_dialog()
+    elif action == "show_cm":
+        xbmc.executebuiltin("Dialog.Close(all, true)")
+        xbmc.executebuiltin("Action(ContextMenu)")
 
     session.close()
