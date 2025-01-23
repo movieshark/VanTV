@@ -33,6 +33,50 @@
                 </setting>
             </group>
         </category>
+        <category id="export" label="30057">
+            <group id="5" label="30058">
+                <setting id="channelexportpath" type="path" label="30059">
+                    <level>0</level>
+                    <default></default>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="button" format="path">
+                        <heading>30059</heading>
+                    </control>
+                </setting>
+            </group>
+            <group id="6" label="30017">
+                <setting id="channelexportname" label="30060" type="string">
+                    <level>0</level>
+                    <default>channels.m3u</default>
+                    <constraints>
+                        <allowempty>false</allowempty>
+                    </constraints>
+                    <control type="edit" format="string">
+                        <heading>30060</heading>
+                    </control>
+                </setting>
+                <setting id="exportchannellist" type="action" label="30061">
+                    <level>0</level>
+                    <data>RunPlugin(plugin://$ID/?action=export_chanlist)</data>
+                    <dependencies>
+                        <dependency type="enable">
+                            <and>
+                                <condition operator="!is" setting="channelexportpath"></condition>
+                                <condition operator="!is" setting="channelexportname"></condition>
+                                <condition operator="!is" setting="accesstoken"></condition>
+                            </and>
+                        </dependency>
+                    </dependencies>
+                    <control type="button" format="action">
+                        <close>true</close>
+                        <!-- It's extremely important to set this to true.
+                        If it remains open, settings such as tokens won't be updated. -->
+                    </control>
+                </setting>
+            </group>
+        </category>
         <category id="advanced" label="30006">
             <group id="2" label="30007">
                 <setting id="useragent" label="30008" type="string">

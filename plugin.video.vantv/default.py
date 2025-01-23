@@ -1148,6 +1148,12 @@ def delete_vodka_device(device: str) -> None:
     xbmc.executebuiltin("Container.Refresh")
 
 
+def export_chanlist(session: Session) -> None:
+    from export_data import export_channel_list
+
+    export_channel_list(addon, session)
+
+
 def about_dialog() -> None:
     """
     Show the about dialog.
@@ -1197,6 +1203,8 @@ if __name__ == "__main__":
         rename_vodka_device(params.get("device"))
     elif action == "del_vodka_device":
         delete_vodka_device(params.get("device"))
+    elif action == "export_chanlist":
+        export_chanlist(session)
     elif action == "about":
         about_dialog()
     elif action == "show_cm":

@@ -251,3 +251,33 @@ msgstr ""
 msgctxt "#30056"
 msgid "Unnamed"
 msgstr ""
+
+msgctxt "#30057"
+msgid "Export"
+msgstr ""
+
+msgctxt "#30058"
+msgid "Path"
+msgstr ""
+
+msgctxt "#30059"
+msgid "Channel list path"
+msgstr ""
+
+msgctxt "#30060"
+msgid "Channel list name"
+msgstr ""
+
+msgctxt "#30061"
+msgid "Export channel list"
+msgstr ""
+
+msgctxt "#30062"
+msgid ""
+"Couldn't export the channel list.\n"
+"Invalid path or name?"
+msgstr ""
+
+msgctxt "#30063"
+msgid "Successfully exported the channel list!"
+msgstr ""
