@@ -336,7 +336,7 @@ def main_menu() -> None:
         name=addon.getLocalizedString(30053),
         action="device_list",
         is_directory=True,
-        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/mobile.png"),
+        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/devices.png"),
     )
     # device list (MyVodka)
     add_item(
@@ -345,7 +345,7 @@ def main_menu() -> None:
         name=addon.getLocalizedString(30041),
         action="myvodka_device_list",
         is_directory=True,
-        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/mobile.png"),
+        icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/devices.png"),
     )
     # about
     add_item(
