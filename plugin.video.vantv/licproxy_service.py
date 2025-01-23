@@ -4,6 +4,7 @@ from json import load
 from random import randint
 from socketserver import ThreadingMixIn
 from traceback import format_exc
+from typing import Union
 from unicodedata import normalize
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer, make_server
 
@@ -75,7 +76,7 @@ def index() -> str:
 
 
 @route("/wv/license", method=["POST"])
-def license() -> dict:
+def license() -> Union[dict, bytes]:
     """
     License proxy route for Widevine license requests.
     This is a workaround, because the policy specifies a 5 minute license validity.
