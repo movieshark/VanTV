@@ -11,7 +11,7 @@ import requests
 import xbmc
 import xbmcaddon
 from bottle import default_app, hook, request, response, route
-from default import authenticate, is_android, prepare_session
+from default import is_android, prepare_session
 
 """
 This file contains a lightweight web server. Don't worry, it only runs
@@ -96,13 +96,6 @@ def license() -> dict:
     license_url = app_config["license_url"]
     renewal_url = app_config["renewal_url"]
     session_token = app_config["session_token"]
-
-    try:
-        authenticate(session)
-    except:
-        xbmc.log(f"Failed to authenticate: {format_exc()}", xbmc.LOGERROR)
-        response.status = 500
-        return {"error": "Failed to authenticate"}
 
     target_url = license_url if not app_config.get("renewing", False) else renewal_url
 
