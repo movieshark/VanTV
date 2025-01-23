@@ -247,3 +247,7 @@ msgstr ""
 msgctxt "#30055"
 msgid "Device action failed!"
 msgstr ""
+
+msgctxt "#30056"
+msgid "Unnamed"
+msgstr ""

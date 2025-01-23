@@ -359,6 +359,37 @@ def main_menu() -> None:
     xbmcplugin.endOfDirectory(int(argv[1]))
 
 
+def get_user_entitlements(session: Session) -> list:
+    """
+    Get the list of products the current user is entitled to.
+    Also filters out the products that are not subscribed.
+
+    :param session: The requests session.
+
+    :return: The list of subscribed products.
+    """
+    try:
+        entitlements = media_list.get_entitlements(
+            session, static.get_api_base(), addon.getSetting("accesstoken")
+        ).get("resourceSet", [])
+    except HTTPError as e:
+        xbmc.log(format_exc(), xbmc.LOGERROR)
+        dialog = xbmcgui.Dialog()
+        dialog.ok(
+            addon.getAddonInfo("name"),
+            addon.getLocalizedString(30019).format(
+                status=e.response.status_code, body=e.response.text
+            ),
+        )
+        exit()
+    # filter for subscribed products
+    return [
+        entitlement["productId"]
+        for entitlement in entitlements
+        if entitlement.get("productId") and entitlement.get("status") == "SUBSCRIBED"
+    ]
+
+
 def channel_list(session: Session) -> None:
     """
     Renders the list of live channels. Subject to change. Currently unsorted,
@@ -367,6 +398,8 @@ def channel_list(session: Session) -> None:
     :param session: The requests session.
     :return: None
     """
+    entitlements = get_user_entitlements(session)
+
     service_list = media_list.get_channel_list(
         session, static.get_api_base(), addon.getSetting("accesstoken")
     ).get("services", [])
@@ -379,7 +412,18 @@ def channel_list(session: Session) -> None:
         if not drm_id or not channel_url:
             # without a DRM ID or URL we can't play the stream
             continue
-        name = editorial.get("longName")
+
+        name = editorial.get("longName", addon.getLocalizedString(30056))
+
+        product_refs = technical.get("productRefs") or []
+        if not any([product_ref in entitlements for product_ref in product_refs]):
+            # user is not entitled to this channel
+            xbmc.log(
+                f"Skipping channel {name}, user not entitled",
+                xbmc.LOGDEBUG,
+            )
+            continue
+
         genres = editorial.get("Categories", [])
         # get first rating code from the list
         ratings = editorial.get("Ratings", [])
