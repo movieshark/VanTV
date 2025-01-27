@@ -12,7 +12,7 @@ import requests
 import xbmc
 import xbmcaddon
 from bottle import default_app, hook, request, response, route
-from default import is_android, prepare_session
+from resources.lib.utils import is_android, prepare_session
 
 """
 This file contains a lightweight web server. Don't worry, it only runs

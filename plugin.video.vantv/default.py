@@ -1,23 +1,27 @@
 import urllib.parse
 from json import dumps, loads
-from os import environ
 from random import choice
 from sys import argv
 from time import time
 from traceback import format_exc
 
 import inputstreamhelper
-import licproxy_service
 import xbmc
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
+from licproxy_service import main_service
 from requests import HTTPError, Session
 from resources.lib.myvodka import login as myvodka_login
 from resources.lib.myvodka import static as myvodka_static
 from resources.lib.myvodka import vtv
-from resources.lib.utils import static as utils_static
-from resources.lib.utils import zulu_to_human_localtime
+from resources.lib.utils import (
+    get_kodi_version,
+    is_android,
+    prepare_device,
+    prepare_session,
+    zulu_to_human_localtime,
+)
 from resources.lib.van import devices, enums, login, media_list, playback, static
 from xbmcvfs import translatePath
 
@@ -123,76 +127,6 @@ def add_item(plugin_prefix, handle, name, action, is_directory, **kwargs) -> Non
     item.addContextMenuItems(ctx_menu)
 
     xbmcplugin.addDirectoryItem(int(handle), url, item, is_directory)
-
-
-def get_kodi_version() -> int:
-    """
-    Get the Kodi major version number.
-
-    :return: The Kodi version.
-    """
-    return int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0])
-
-
-def is_android() -> bool:
-    """
-    Check if the platform is Android.
-
-    :return: True if the platform is Android, False otherwise.
-    """
-    return xbmc.getInfoLabel("System.Platform.Android") or "ANDROID_STORAGE" in environ
-
-
-def prepare_session() -> Session:
-    """
-    Prepare a requests session for use within the addon. Also sets
-     the user agent to a random desktop user agent if it is not set.
-
-    :return: The prepared session.
-    """
-    user_agent = addon.getSetting("useragent")
-    if not user_agent:
-        if is_android():
-            addon.setSetting("useragent", choice(utils_static.android_user_agents))
-        else:
-            addon.setSetting("useragent", choice(utils_static.desktop_user_agents))
-        user_agent = addon.getSetting("useragent")
-    session = Session()
-    session.headers.update(
-        {
-            "User-Agent": user_agent,
-        }
-    )
-    return session
-
-
-def prepare_device() -> None:
-    """
-    Prepare the device model for the addon. If the device model is not set,
-     a random device model is chosen from the static device list.
-
-    :return: None
-    """
-    device_model = addon.getSetting("devicemodel")
-    _is_android = is_android()
-
-    if (
-        not device_model
-        or (_is_android and device_model not in static.android_devices)
-        or (not _is_android and device_model not in static.web_devices)
-    ):
-        if _is_android:
-            device_model = choice(list(static.android_devices.keys()))
-        else:
-            device_model = choice(list(static.web_devices.keys()))
-        addon.setSetting("devicemodel", device_model)
-
-    device_properties = (
-        static.android_devices.get(device_model)
-        if _is_android
-        else static.web_devices.get(device_model)
-    )
-    return device_properties
 
 
 def authenticate(session: Session) -> None:
@@ -543,7 +477,7 @@ def play(session: Session, channel_id: str, channel_url: str) -> None:
     renewal_url = f"{static.get_license_server_base()}/ssm/v1/renewal-license-wv"
     teardown_url = f"{static.get_license_server_base()}/ssm/v1/sessions/teardown"
 
-    licproxy_thread = licproxy_service.main_service(
+    licproxy_thread = main_service(
         addon, license_url, renewal_url, session_token, teardown_url
     )
 
@@ -1154,6 +1088,23 @@ def export_chanlist(session: Session) -> None:
     export_channel_list(addon, session)
 
 
+def export_epg(session: Session) -> None:
+    from export_data import export_epg
+
+    from_time = addon.getSetting("epgfrom")
+    to_time = addon.getSetting("epgto")
+
+    dialog = xbmcgui.Dialog()
+    dialog.notification(
+        addon.getAddonInfo("name"),
+        addon.getLocalizedString(30086).format(from_time=from_time, to_time=to_time),
+        xbmcgui.NOTIFICATION_INFO,
+        5000,
+    )
+
+    export_epg(addon, session, from_time, to_time)
+
+
 def about_dialog() -> None:
     """
     Show the about dialog.
@@ -1205,6 +1156,8 @@ if __name__ == "__main__":
         delete_vodka_device(params.get("device"))
     elif action == "export_chanlist":
         export_chanlist(session)
+    elif action == "export_epg":
+        export_epg(session)
     elif action == "about":
         about_dialog()
     elif action == "show_cm":

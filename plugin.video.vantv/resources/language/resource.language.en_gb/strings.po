@@ -281,3 +281,100 @@ msgstr ""
 msgctxt "#30063"
 msgid "Successfully exported the channel list!"
 msgstr ""
+
+msgctxt "#30064"
+msgid "Couldn't save the EPG data.\n"
+"Check if you have write permissions and enough space on the device."
+msgstr ""
+
+msgctxt "#30065"
+msgid "Successfully saved the EPG data!"
+msgstr ""
+
+msgctxt "#30066"
+msgid "EPG"
+msgstr ""
+
+msgctxt "#30067"
+msgid "EPG auto update"
+msgstr ""
+
+msgctxt "#30068"
+msgid "EPG file name"
+msgstr ""
+
+msgctxt "#30069"
+msgid "Request EPG from (days)"
+msgstr ""
+
+msgctxt "#30070"
+msgid "Request EPG to (days)"
+msgstr ""
+
+msgctxt "#30071"
+msgid "EPG update frequency"
+msgstr ""
+
+msgctxt "#30072"
+msgid "3 hours"
+msgstr ""
+
+msgctxt "#30073"
+msgid "6 hours"
+msgstr ""
+
+msgctxt "#30074"
+msgid "12 hours"
+msgstr ""
+
+msgctxt "#30075"
+msgid "24 hours"
+msgstr ""
+
+msgctxt "#30076"
+msgid "48 hours"
+msgstr ""
+
+msgctxt "#30077"
+msgid "72 hours"
+msgstr ""
+
+msgctxt "#30078"
+msgid "Amount of channels to fetch at once"
+msgstr ""
+
+msgctxt "#30079"
+msgid "1 channel"
+msgstr """
+
+msgctxt "#30080"
+msgid "10 channels"
+msgstr ""
+
+msgctxt "#30081"
+msgid "20 channels"
+msgstr ""
+
+msgctxt "#30082"
+msgid "30 channels (default)"
+msgstr ""
+
+msgctxt "#30083"
+msgid "Give up after (tries)"
+msgstr ""
+
+msgctxt "#30084"
+msgid "Notification on EPG fetch completion"
+msgstr ""
+
+msgctxt "#30085"
+msgid "Export EPG"
+msgstr ""
+
+msgctxt "#30086"
+msgid "Manual EPG export from {from_time} to {to_time}..."
+msgstr ""
+
+msgctxt "#30087"
+msgid "Last EPG update"
+msgstr ""

@@ -1,3 +1,5 @@
+from json import dumps
+
 from requests import Session
 
 
@@ -52,6 +54,37 @@ def get_entitlements(session: Session, api_base: str, access_token: str) -> dict
     response = session.get(
         f"{api_base}/rmg/v1/user/entitlements",
         headers=headers,
+    )
+    response.raise_for_status()
+    json_data = response.json()
+    return json_data
+
+
+def get_epg(
+    session: Session,
+    api_base: str,
+    access_token: str,
+    channels: list,
+    from_time: str,
+    to_time: str,
+    fields: list,
+):
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Nagra-Device-Type": session.device_properties["nagra_device_type"],
+        "Nagra-Target": session.device_properties["nagra_target"],
+    }
+    params = {
+        "from": from_time,
+        "to": to_time,
+        "channel": ",".join(channels),
+    }
+    if fields:
+        params["fields"] = dumps(fields)
+    response = session.get(
+        f"{api_base}/metadata/v1/epg",
+        headers=headers,
+        params=params,
     )
     response.raise_for_status()
     json_data = response.json()
