@@ -297,6 +297,14 @@ def main_menu() -> None:
         action="iptv_wizard",
         is_directory=True,
     )
+    # addon settings
+    add_item(
+        plugin_prefix=argv[0],
+        handle=argv[1],
+        name=addon.getLocalizedString(30105),
+        action="addon_settings",
+        is_directory=True,
+    )
     # about
     add_item(
         plugin_prefix=argv[0],
@@ -1335,6 +1343,8 @@ if __name__ == "__main__":
         export_chanlist(session)
     elif action == "export_epg":
         export_epg(session)
+    elif action == "addon_settings":
+        addon.openSettings()
     elif action == "about":
         about_dialog()
     elif action == "iptv_wizard":
