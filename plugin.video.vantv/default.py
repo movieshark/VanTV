@@ -295,6 +295,7 @@ def main_menu() -> None:
         handle=argv[1],
         name=addon.getLocalizedString(30095),
         action="iptv_wizard",
+        description=addon.getLocalizedString(30106),
         is_directory=True,
     )
     # addon settings

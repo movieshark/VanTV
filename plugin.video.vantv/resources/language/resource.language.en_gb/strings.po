@@ -453,3 +453,7 @@ msgstr ""
 msgctxt "#30105"
 msgid "Settings"
 msgstr ""
+
+msgctxt "#30106"
+msgid "Run this if you want to setup IPTV Simple Client simply with EPG support. Only needs to be run once."
+msgstr ""
