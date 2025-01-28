@@ -26,6 +26,8 @@ web_devices = {
         "screen_width": 1920,
         "screen_height": 1080,
         "playout_device_class": "browser",
+        "catchup_control": "clientWebCatchupControl",
+        "npvr_control": "clientWebNpvrControl",
     }
 }
 
@@ -41,6 +43,8 @@ android_devices = {
         "screen_width": 1080,
         "screen_height": 2340,
         "playout_device_class": "mobileDevice",
+        "catchup_control": "clientMobileCatchupControl",
+        "npvr_control": "clientMobileNpvrControl",
     },
     "pixel_6": {
         "hardware_model": "Pixel 6",
@@ -53,6 +57,8 @@ android_devices = {
         "screen_width": 1080,
         "screen_height": 2400,
         "playout_device_class": "mobileDevice",
+        "catchup_control": "clientMobileCatchupControl",
+        "npvr_control": "clientMobileNpvrControl",
     },
     "pixel_7": {
         "hardware_model": "Pixel 7",
@@ -65,6 +71,8 @@ android_devices = {
         "screen_width": 1080,
         "screen_height": 2400,
         "playout_device_class": "mobileDevice",
+        "catchup_control": "clientMobileCatchupControl",
+        "npvr_control": "clientMobileNpvrControl",
     },
     "pixel_8": {
         "hardware_model": "Pixel 8",
@@ -77,6 +85,8 @@ android_devices = {
         "screen_width": 1080,
         "screen_height": 2400,
         "playout_device_class": "mobileDevice",
+        "catchup_control": "clientMobileCatchupControl",
+        "npvr_control": "clientMobileNpvrControl",
     },
 }
 

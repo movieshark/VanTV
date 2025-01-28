@@ -128,8 +128,7 @@ def export_channel_list(addon: xbmcaddon.Addon, session: Session) -> None:
         icon = f"{static.get_imageservice_base()}/images/v1/image/channel/{channel_id}/logo?aspect=1x1&height=256&imageFormat=webp&width=256"
 
         # m3u entry
-        # TODO: add catchup="vod" once we have catchup support
-        output += f'#EXTINF:-1 tvg-id="{channel_id}" tvg-name="{name}" tvg-logo="{icon}" group-title="{groups}",{name}\n'
+        output += f'#EXTINF:-1 tvg-id="{channel_id}" tvg-name="{name}" tvg-logo="{icon}" group-title="{groups}" catchup="vod",{name}\n'
         query = {
             "action": "play_channel",
             "id": drm_id,
@@ -162,6 +161,7 @@ def enc_xml(text) -> str:
     Method to encode an XML string
 
     :param text: string to encode
+
     :return: encoded string
     """
     to_replace = {
@@ -182,6 +182,18 @@ def export_epg(
     to_time: str,
     is_killed: threading.Event = None,
 ) -> None:
+    """
+    Export EPG data to an XML file in XMLTV format. Long running method.
+    Set is_killed to a threading.Event object to stop the thread at certain checkpoints.
+
+    :param addon: The addon object.
+    :param session: The requests session to use.
+    :param from_time: str of days back from the current time you wish to fetch EPG data from.
+    :param to_time: str of days forth from the current time you wish to fetch EPG data from.
+    :param is_killed: The threading.Event object to check if the thread is killed. Returns if set.
+
+    :return: None
+    """
     dialog = xbmcgui.Dialog()
     try:
         path = get_path(addon, is_epg=True)
@@ -231,13 +243,11 @@ def export_epg(
         technical = service.get("technical", {})
 
         channel_id = editorial.get("id") or editorial.get("_id")
-        drm_id = technical.get("drmId")
         name = editorial.get("longName", addon.getLocalizedString(30056))
-        if not drm_id or not channel_id:
-            # without a DRM ID we can't play the stream
+        if not channel_id:
             # without a channel ID we can't uniquely identify the channel
             xbmc.log(
-                f"Skipping channel {name}, missing DRM ID or channel ID",
+                f"Skipping channel {name}, missing channel ID",
                 xbmc.LOGDEBUG,
             )
             continue
@@ -340,9 +350,13 @@ def export_epg(
                             "period",
                             "editorial.SeasonNumber",
                             "editorial.episodeNumber",
+                            "editorial.technicals.media.AV_PlaylistName",
+                            "editorial.technicals.deviceType",
                             "Episode",
                             "editorial.contentType",
                             "editorial.Countries",
+                            session.device_properties["catchup_control"],
+                            session.device_properties["npvr_control"],
                             # "Year",
                             # "Genres",
                             # "Actors",
@@ -383,25 +397,67 @@ def export_epg(
                         if not all([epg_id, start, end]):
                             # can't continue at least without so much data
                             continue
-                        start, end = unix_to_epg_time(start), unix_to_epg_time(end)
+                        start_epg, end_epg = unix_to_epg_time(start), unix_to_epg_time(
+                            end
+                        )
 
                         name = program.get("title") or addon.getLocalizedString(30056)
                         description = program.get("Description") or ""
                         editorial = program.get("editorial") or {}
+                        technicals = editorial.get("technicals") or []
                         season_number = editorial.get("SeasonNumber")
                         episode_number = editorial.get("episodeNumber")
                         content_type = editorial.get("contentType")
                         episode_name = program.get("Episode") or ""
                         countries = (editorial.get("Countries") or "").split(";")
+                        catchup_control = (
+                            program.get(session.device_properties["catchup_control"])
+                            or "0"
+                        ) == "1"
+                        npvr_control = (
+                            program.get(session.device_properties["npvr_control"])
+                            or "0"
+                        ) == "1"
 
                         icon = f"{static.get_imageservice_base()}/images/v1/image/movie/{epg_id}/banner?aspect=16x9&imageFormat=webp&width=320"
                         if content_type in ["episode", "tvshow"]:
                             icon = f"{static.get_imageservice_base()}/images/v1/image/episode/{epg_id}/episode?aspect=16x9&imageFormat=webp&width=320"
 
+                        av_playlist = next(
+                            (
+                                (technical.get("media") or {}).get("AV_PlaylistName")
+                                or {}
+                                for technical in technicals
+                                if session.device_properties["nagra_device_type"]
+                                in (technical.get("deviceType") or [])
+                            ),
+                            {},
+                        )
+                        media_url = av_playlist.get("uri") or ""
+                        drm_id = av_playlist.get("drmId") or ""
+
+                        catchup_url = f"plugin://{addon.getAddonInfo('id')}/?action=catchup&id={enc_xml(drm_id)}&url={quote_plus(media_url)}&start={start}&end={end}&epg_id={epg_id}"
+                        to_catchup = False
+                        if media_url and drm_id:
+                            if npvr_control:
+                                catchup_url += "&rec=1"
+                                to_catchup = True
+                            else:
+                                catchup_url += "&rec=0"
+                            if catchup_control:
+                                catchup_url += "&res=1"
+                                to_catchup = True
+                            else:
+                                catchup_url += "&res=0"
+
                         # epg content
                         f.write(
-                            f'<programme start="{enc_xml(start)}" stop="{enc_xml(end)}" channel="{enc_xml(channel_id)}">'
+                            f'<programme start="{enc_xml(start_epg)}" stop="{enc_xml(end_epg)}" channel="{enc_xml(channel_id)}"'
                         )
+                        if to_catchup:
+                            f.write(f' catchup-id="{enc_xml(catchup_url)}"')
+                        f.write(">")
+
                         f.write(f'<title lang="hu">{enc_xml(name)}</title>')
                         f.write(f'<desc lang="hu">{enc_xml(description)}</desc>')
                         f.write(f'<icon src="{enc_xml(icon)}"/>')
@@ -554,7 +610,12 @@ def restart_on_settings_change(thread: EPGUpdaterThread, handle: str) -> None:
 """
 
 
-def epg_fetcher():
+def epg_fetcher() -> None:
+    """
+    Main function to start the EPG updater.
+
+    :return: None
+    """
     addon = xbmcaddon.Addon()
 
     handle = f"[{addon.getAddonInfo('name')}]"

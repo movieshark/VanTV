@@ -378,3 +378,31 @@ msgstr ""
 msgctxt "#30087"
 msgid "Last EPG update"
 msgstr ""
+
+msgctxt "#30088"
+msgid "Pick your poison!"
+msgstr ""
+
+msgctxt "#30089"
+msgid "Play it!"
+msgstr ""
+
+msgctxt "#30090"
+msgid "Record it!"
+msgstr ""
+
+msgctxt "#30091"
+msgid "Record series!"
+msgstr ""
+
+msgctxt "#30092"
+msgid "This item will be played in the future. Please wait until it starts."
+msgstr ""
+
+msgctxt "#30093"
+msgid "This item was live in the past and due to content restrictions it can't be played back."
+msgstr ""
+
+msgctxt "#30094"
+msgid "Recording scheduled successfully!"
+msgstr ""

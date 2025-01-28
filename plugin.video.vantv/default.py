@@ -22,7 +22,15 @@ from resources.lib.utils import (
     prepare_session,
     zulu_to_human_localtime,
 )
-from resources.lib.van import devices, enums, login, media_list, playback, static
+from resources.lib.van import (
+    devices,
+    enums,
+    login,
+    media_list,
+    playback,
+    recording,
+    static,
+)
 from xbmcvfs import translatePath
 
 addon = xbmcaddon.Addon()
@@ -1083,12 +1091,26 @@ def delete_vodka_device(device: str) -> None:
 
 
 def export_chanlist(session: Session) -> None:
+    """
+    Export the channel list to a file. Triggered on settings button press.
+
+    :param session: The requests session.
+
+    :return: None
+    """
     from export_data import export_channel_list
 
     export_channel_list(addon, session)
 
 
 def export_epg(session: Session) -> None:
+    """
+    Manually export the EPG to a file. Triggered on settings button press only.
+    For automatic EPG export, see the export_data module.
+
+    :param session: The requests session.
+
+    :return: None"""
     from export_data import export_epg
 
     from_time = addon.getSetting("epgfrom")
@@ -1103,6 +1125,142 @@ def export_epg(session: Session) -> None:
     )
 
     export_epg(addon, session, from_time, to_time)
+
+
+def catchup(
+    session: Session,
+    drm_id: int,
+    media_url: int,
+    start: int,
+    stop: int,
+    recordable: bool,
+    restartable: bool,
+    epg_id: str,
+) -> None:
+    """
+    Handles catchup playback and recording dialogs as well as the actual playback.
+
+    :param session: The requests session.
+    :param drm_id: The DRM ID of the media.
+    :param media_url: The URL of the media.
+    :param start: The start time of the media.
+    :param stop: The stop time of the media.
+    :param recordable: Whether the media is recordable.
+    :param restartable: Whether the media is restartable.
+    :param epg_id: The EPG ID of the media.
+    """
+    dialog = xbmcgui.Dialog()
+    # if its recordable and the title is live now or was in the past, then we can play it
+    if recordable and int(start) <= time():
+        # if it is live now, ask if they want to record
+        if time() <= int(stop):
+            choice = dialog.yesnocustom(
+                addon.getAddonInfo("name"),
+                addon.getLocalizedString(30088),
+                customlabel=addon.getLocalizedString(30089),
+                nolabel=addon.getLocalizedString(30090),
+                yeslabel=addon.getLocalizedString(30091),
+            )
+            if choice == 0:  # record
+                try:
+                    recording.record_episode(
+                        session,
+                        static.get_api_base(),
+                        addon.getSetting("accesstoken"),
+                        epg_id,
+                    )
+                except HTTPError as e:
+                    xbmc.log(format_exc(), xbmc.LOGERROR)
+                    return dialog.ok(
+                        addon.getAddonInfo("name"),
+                        addon.getLocalizedString(30019).format(
+                            status=e.response.status_code, body=e.response.text
+                        ),
+                    )
+                return dialog.ok(
+                    addon.getAddonInfo("name"), addon.getLocalizedString(30094)
+                )
+            elif choice == 1:  # record series
+                try:
+                    recording.record_series(
+                        session,
+                        static.get_api_base(),
+                        addon.getSetting("accesstoken"),
+                        epg_id,
+                    )
+                except HTTPError as e:
+                    xbmc.log(format_exc(), xbmc.LOGERROR)
+                    return dialog.ok(
+                        addon.getAddonInfo("name"),
+                        addon.getLocalizedString(30019).format(
+                            status=e.response.status_code, body=e.response.text
+                        ),
+                    )
+                return dialog.ok(
+                    addon.getAddonInfo("name"), addon.getLocalizedString(30094)
+                )
+            # if the user cancels or presses the custom button, we can play
+        play(session, drm_id, media_url)
+        return
+    # if its restartable and the title is live now, then we can play it
+    if restartable and int(start) <= time() <= int(stop):
+        play(session, drm_id, media_url)
+        return
+    # if the title was in the past, it was restartable, but it's not recordable,
+    #  then we can't play it, show a dialog
+    elif restartable and not recordable and int(stop) < time():
+        dialog.ok(addon.getAddonInfo("name"), addon.getLocalizedString(30093))
+        return
+    # if title is in the future, then we can't play it, show a dialog
+    if int(start) > time():
+        dialog = xbmcgui.Dialog()
+        if recordable:
+            choice = dialog.yesno(
+                addon.getAddonInfo("name"),
+                addon.getLocalizedString(30092),
+                nolabel=addon.getLocalizedString(30090),
+                yeslabel=addon.getLocalizedString(30091),
+            )
+            if choice == 0:  # record
+                try:
+                    recording.record_episode(
+                        session,
+                        static.get_api_base(),
+                        addon.getSetting("accesstoken"),
+                        epg_id,
+                    )
+                except HTTPError as e:
+                    xbmc.log(format_exc(), xbmc.LOGERROR)
+                    return dialog.ok(
+                        addon.getAddonInfo("name"),
+                        addon.getLocalizedString(30019).format(
+                            status=e.response.status_code, body=e.response.text
+                        ),
+                    )
+                return dialog.ok(
+                    addon.getAddonInfo("name"), addon.getLocalizedString(30094)
+                )
+            elif choice == 1:  # record series
+                try:
+                    recording.record_series(
+                        session,
+                        static.get_api_base(),
+                        addon.getSetting("accesstoken"),
+                        epg_id,
+                    )
+                except HTTPError as e:
+                    xbmc.log(format_exc(), xbmc.LOGERROR)
+                    return dialog.ok(
+                        addon.getAddonInfo("name"),
+                        addon.getLocalizedString(30019).format(
+                            status=e.response.status_code, body=e.response.text
+                        ),
+                    )
+                return dialog.ok(
+                    addon.getAddonInfo("name"), addon.getLocalizedString(30094)
+                )
+        else:
+            dialog.ok(addon.getAddonInfo("name"), addon.getLocalizedString(30092))
 
 
 def about_dialog() -> None:
@@ -1142,6 +1300,17 @@ if __name__ == "__main__":
         channel_list(session)
     elif action == "play_channel":
         play(session, params.get("id"), urllib.parse.unquote_plus(params.get("extra")))
+    elif action == "catchup":
+        catchup(
+            session,
+            params["id"],
+            params["url"],
+            params["start"],
+            params["end"],
+            params.get("rec", "0") == "1",
+            params.get("res", "0") == "1",
+            params.get("epg_id"),
+        )
     elif action == "device_list":
         device_list(session)
     # elif action == "del_device":

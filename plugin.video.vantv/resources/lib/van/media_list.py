@@ -69,6 +69,19 @@ def get_epg(
     to_time: str,
     fields: list,
 ):
+    """
+    Get the EPG for a list of channels.
+
+    :param session: The requests session to use.
+    :param api_base: The API base URL.
+    :param access_token: The access token to use for authentication.
+    :param channels: The list of channel IDs to get the EPG for.
+    :param from_time: The start time for the EPG. Refer to docs for format.
+    :param to_time: The end time for the EPG. Refer to docs for format.
+    :param fields: The list of fields to include in the response.
+
+    :return: The EPG in JSON format.
+    """
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Nagra-Device-Type": session.device_properties["nagra_device_type"],
