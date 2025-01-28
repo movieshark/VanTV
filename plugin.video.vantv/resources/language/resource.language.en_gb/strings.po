@@ -406,3 +406,46 @@ msgstr ""
 msgctxt "#30094"
 msgid "Recording scheduled successfully!"
 msgstr ""
+
+msgctxt "#30095"
+msgid "IPTV Simple Client Setup Wizard"
+msgstr ""
+
+msgctxt "#30096"
+msgid "Welcome![CR]This wizard helps you with IPTV Simple Client setup.[CR]\n"
+"If you want TV, interactive TV guide and recording capabilities, you need to set up IPTV Simple Client."
+msgstr ""
+
+msgctxt "#30097"
+msgid "Continue"
+
+msgctxt "#30098"
+msgid "Cancel"
+msgstr ""
+
+msgctxt "#30099"
+msgid "Alright, now comes the questionnaire part![CR]The addon will now ask you some questions you will be\n"
+" able to configure later in the addon settings.[CR] If you are unsure, keep the default values."
+msgstr ""
+
+msgctxt "#30100"
+msgid "Couldn't create the folder. Do you have write permissions?"
+msgstr ""
+
+msgctxt "#30101"
+msgid "Now you will be asked how many days back do you want your EPG backfilled.\n"
+" After that you will be asked how many days forward do you want your EPG to be fetched.\n"
+" Kodi loads 1 days back by default and 3 days forward, therefore we recommend that unless you have a different setting."
+msgstr ""
+
+msgctxt "#30102"
+msgid "Do you want a notification when the EPG fetch is complete?"
+msgstr ""
+
+msgctxt "#30103"
+msgid "The addon settings are now complete. We will try to setup IPTV Simple Client for you."
+msgstr ""
+
+msgctxt "#30104"
+msgid "Successfull setup!"
+msgstr ""

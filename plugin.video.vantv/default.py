@@ -1,11 +1,11 @@
 import urllib.parse
 from json import dumps, loads
-from random import choice
 from sys import argv
 from time import time
 from traceback import format_exc
 
 import inputstreamhelper
+import iptv_wizard
 import xbmc
 import xbmcaddon
 import xbmcgui
@@ -288,6 +288,14 @@ def main_menu() -> None:
         action="myvodka_device_list",
         is_directory=True,
         icon=translatePath(f"{addon.getAddonInfo('path')}/resources/media/devices.png"),
+    )
+    # IPTV wizard
+    add_item(
+        plugin_prefix=argv[0],
+        handle=argv[1],
+        name=addon.getLocalizedString(30095),
+        action="iptv_wizard",
+        is_directory=True,
     )
     # about
     add_item(
@@ -1329,6 +1337,8 @@ if __name__ == "__main__":
         export_epg(session)
     elif action == "about":
         about_dialog()
+    elif action == "iptv_wizard":
+        iptv_wizard.run(addon, session)
     elif action == "show_cm":
         xbmc.executebuiltin("Dialog.Close(all, true)")
         xbmc.executebuiltin("Action(ContextMenu)")
