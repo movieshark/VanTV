@@ -11,10 +11,10 @@ def run(addon: xbmcaddon.Addon, session: Session) -> None:
     """
     Run the IPTV Simple Client setup wizard which guides the user through the setup process.
     Adds the channel list and EPG to the IPTV Simple Client and enables it.
-    
+
     :param addon: The addon instance
     :param session: The requests session
-    
+
     :return: None"""
     from export_data import export_channel_list, export_epg
 

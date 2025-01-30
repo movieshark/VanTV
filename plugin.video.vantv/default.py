@@ -137,7 +137,7 @@ def add_item(plugin_prefix, handle, name, action, is_directory, **kwargs) -> Non
     xbmcplugin.addDirectoryItem(int(handle), url, item, is_directory)
 
 
-def authenticate(session: Session) -> None:
+def authenticate(session: Session, addon_from_thread: xbmcaddon.Addon = None) -> None:
     """
     Should be called before any API requests are made.
     Handles the login process and token refreshing. If reauthentication is necessary,
@@ -146,19 +146,23 @@ def authenticate(session: Session) -> None:
     :param session: The requests session to use.
     :return: None
     """
-    if not all([addon.getSetting("username"), addon.getSetting("password")]):
+    addon_local = addon_from_thread or addon
+
+    if not all(
+        [addon_local.getSetting("username"), addon_local.getSetting("password")]
+    ):
         return
-    access_token_expiry = addon.getSetting("accessexpiry")
+    access_token_expiry = addon_local.getSetting("accessexpiry")
     if not access_token_expiry:
         # fresh login
         try:
             login_response = login.sign_in(
                 session,
                 static.get_api_base(),
-                addon.getSetting("username"),
-                addon.getSetting("password"),
+                addon_local.getSetting("username"),
+                addon_local.getSetting("password"),
                 static.get_login_pubkey(),
-                device_id=addon.getSetting("devicekey") or "",
+                device_id=addon_local.getSetting("devicekey") or "",
             )
         except HTTPError as e:
             # some errors are pre-defined, we handle those with better error messages
@@ -175,14 +179,14 @@ def authenticate(session: Session) -> None:
                     enums.LoginInternalError(e.response.json()["code"])
                     == enums.LoginInternalError.DEVICE_DELETED
                 ):
-                    addon.setSetting("devicekey", "")
-                    addon.setSetting("accessexpiry", "")
-                    return authenticate(session)
+                    addon_local.setSetting("devicekey", "")
+                    addon_local.setSetting("accessexpiry", "")
+                    return authenticate(session, addon_from_thread)
 
                 dialog = xbmcgui.Dialog()
                 dialog.ok(
-                    addon.getAddonInfo("name"),
-                    addon.getLocalizedString(30018).format(
+                    addon_local.getAddonInfo("name"),
+                    addon_local.getLocalizedString(30018).format(
                         error=enums.LoginInternalError._value2member_map_[
                             e.response.json().get("code")
                         ].name
@@ -196,42 +200,46 @@ def authenticate(session: Session) -> None:
                 message = e.response.json().get("message")
             dialog = xbmcgui.Dialog()
             dialog.ok(
-                addon.getAddonInfo("name"),
-                addon.getLocalizedString(30016).format(
+                addon_local.getAddonInfo("name"),
+                addon_local.getLocalizedString(30016).format(
                     status=e.response.status_code, message=message
                 ),
             )
-            addon.openSettings()
+            addon_local.openSettings()
             exit()
         _parse_login_response(login_response)
     elif int(access_token_expiry) < int(time()):
         # try to refresh the token if refresh token is still valid
-        refresh_token_expiry = addon.getSetting("refreshexpiry")
+        refresh_token_expiry = addon_local.getSetting("refreshexpiry")
         if int(refresh_token_expiry) > int(time()):
             try:
                 refresh_response = login.refresh_access_token(
                     session,
                     static.get_api_base(),
-                    addon.getSetting("refreshtoken"),
+                    addon_local.getSetting("refreshtoken"),
                 )
             except HTTPError as e:
                 # refresh token probably invalid, redo the whole login process
-                addon.setSetting("accessexpiry", "")
-                return authenticate(session)
-            _parse_login_response(refresh_response)
+                addon_local.setSetting("accessexpiry", "")
+                return authenticate(session, addon_from_thread)
+            _parse_login_response(refresh_response, addon_from_thread)
         else:
             # refresh token invalid, redo the whole login process
-            addon.setSetting("accessexpiry", "")
-            return authenticate(session)
+            addon_local.setSetting("accessexpiry", "")
+            return authenticate(session, addon_from_thread)
 
 
-def _parse_login_response(response: dict) -> None:
+def _parse_login_response(
+    response: dict, addon_from_thread: xbmcaddon.Addon = None
+) -> None:
     """
     Helper, that parses the login response and sets the necessary settings.
 
     :param response: The login response.
     :return: None
     """
+    addon_local = addon_from_thread or addon
+
     access_token = response.get("access_token")
     access_token_expiry = response.get("expires_in", 0) + int(time())
     refresh_token = response.get("refresh_token")
@@ -240,20 +248,20 @@ def _parse_login_response(response: dict) -> None:
         # if we don't get the necessary tokens, show a dialog and open the settings
         dialog = xbmcgui.Dialog()
         dialog.ok(
-            addon.getAddonInfo("name"),
-            addon.getLocalizedString(30018).format(
+            addon_local.getAddonInfo("name"),
+            addon_local.getLocalizedString(30018).format(
                 error="Missing tokens from login response"
             ),
         )
-        addon.openSettings()
+        addon_local.openSettings()
         raise ValueError("Missing tokens from login response")
-    addon.setSetting("accesstoken", access_token)
-    addon.setSetting("accessexpiry", str(access_token_expiry))
-    addon.setSetting("refreshtoken", refresh_token)
-    addon.setSetting("refreshexpiry", str(refresh_token_expiry))
+    addon_local.setSetting("accesstoken", access_token)
+    addon_local.setSetting("accessexpiry", str(access_token_expiry))
+    addon_local.setSetting("refreshtoken", refresh_token)
+    addon_local.setSetting("refreshexpiry", str(refresh_token_expiry))
     device_key = response.get("client_id")
     if device_key:
-        addon.setSetting("devicekey", device_key)
+        addon_local.setSetting("devicekey", device_key)
 
 
 def main_menu() -> None:

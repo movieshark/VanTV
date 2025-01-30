@@ -557,7 +557,7 @@ class EPGUpdaterThread(threading.Thread):
                 and not self.failed_count > self.addon.getSettingInt("epgfetchtries")
             ):
                 try:
-                    authenticate(self.session)
+                    authenticate(self.session, self.addon)
                     export_epg(
                         self.addon,
                         self.session,
